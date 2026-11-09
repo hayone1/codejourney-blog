@@ -1,0 +1,28 @@
+name: Rebuild site
+
+# The site bakes the posts into its image at build time. After a change to
+# the posts on main, ask hayone1/codejourney to build and deploy a new image.
+#
+# Needs the secret SITE_DISPATCH_TOKEN: a fine-grained GitHub token for the
+# repository hayone1/codejourney with "Contents: Read and write".
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send content-published to hayone1/codejourney
+        env:
+          GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+        run: |
+          gh api repos/hayone1/codejourney/dispatches \
+            -f event_type=content-published \
+            -f "client_payload[sha]=${GITHUB_SHA}"
