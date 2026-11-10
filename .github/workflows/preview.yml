@@ -1,0 +1,153 @@
+name: Preview
+
+# A preview of every pull request into main at
+# https://blog-pr-<number>.codejourney.io: the site of hayone1/codejourney
+# with the posts of the pull request's branch.
+#
+# This workflow sends the event "content-preview" to hayone1/codejourney. The
+# workflow "preview" there builds and runs the preview, or removes it when the
+# pull request closes (merged or not), together with its images. This
+# workflow then waits until the preview answers, and comments the address on
+# the pull request.
+#
+# Needs the secret SITE_DISPATCH_TOKEN of the environment "site-dispatch",
+# like rebuild-site.yml. Only main may use the environment.
+# "pull_request_target" runs this file from main, so the token is available,
+# and the workflow never checks out the code of the pull request. Pull
+# requests from forks get no preview: their posts would run on the cluster.
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, closed]
+  # "Studio PR" opens its pull request with GITHUB_TOKEN, and GitHub starts
+  # no workflow for that event. This trigger covers that first preview.
+  workflow_run:
+    workflows: ["Studio PR"]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number || 'studio' }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: >-
+      (github.event_name == 'pull_request_target'
+        && github.event.pull_request.head.repo.full_name == github.repository)
+      || (github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    environment: site-dispatch
+    timeout-minutes: 40
+    steps:
+      - name: Find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" = workflow_run ]; then
+            pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head studio --base main --state open \
+              --json number,headRefOid,createdAt --jq '.[0] // empty')
+            if [ -z "$pr" ]; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # Only a pull request that "Studio PR" just opened. Later pushes
+            # to studio start this workflow through pull_request_target.
+            age=$(( $(date +%s) - $(date -d "$(jq -r .createdAt <<< "$pr")" +%s) ))
+            if [ "$age" -gt 600 ]; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            NUMBER=$(jq -r .number <<< "$pr")
+            SHA=$(jq -r .headRefOid <<< "$pr")
+            BRANCH=studio
+            ACTION=opened
+          fi
+          action=deploy
+          if [ "$ACTION" = closed ]; then action=remove; fi
+          {
+            echo "skip=false"
+            echo "number=${NUMBER}"
+            echo "sha=${SHA}"
+            echo "branch=${BRANCH}"
+            echo "action=${action}"
+            echo "host=blog-pr-${NUMBER}.codejourney.io"
+            echo "tag=blog-pr-${NUMBER}-${SHA::7}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Ask hayone1/codejourney to ${{ steps.pr.outputs.action }} the preview
+        if: steps.pr.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.SITE_DISPATCH_TOKEN }}
+          NUMBER: ${{ steps.pr.outputs.number }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          BRANCH: ${{ steps.pr.outputs.branch }}
+          ACTION: ${{ steps.pr.outputs.action }}
+        run: |
+          gh api repos/hayone1/codejourney/dispatches \
+            -f event_type=content-preview \
+            -f "client_payload[pr]=${NUMBER}" \
+            -f "client_payload[sha]=${SHA}" \
+            -f "client_payload[branch]=${BRANCH}" \
+            -f "client_payload[action]=${ACTION}"
+
+      # Ask the Contabo name servers directly, so that no resolver caches a
+      # "not found" for the new name. The build takes about 5 minutes.
+      - name: Wait until the preview answers
+        if: steps.pr.outputs.skip == 'false' && steps.pr.outputs.action == 'deploy'
+        env:
+          HOST: ${{ steps.pr.outputs.host }}
+          TAG: ${{ steps.pr.outputs.tag }}
+        run: |
+          ip=$(dig +short @ns1.contabo.net codejourney.io A | head -n 1)
+          for i in $(seq 1 150); do
+            served=$(curl -s -o /dev/null -D - --max-time 10 --resolve "${HOST}:443:${ip}" "https://${HOST}/" \
+              | tr -d '\r' | awk -F': ' 'tolower($1) == "x-preview-tag" { print $2 }')
+            if [ "$served" = "$TAG" ]; then
+              echo "The preview runs ${TAG}."
+              break
+            fi
+            if [ "$i" = 150 ]; then
+              echo "::error::The preview did not answer with ${TAG} within 25 minutes (last answer: '${served}'). See the workflow preview in hayone1/codejourney."
+              exit 1
+            fi
+            sleep 10
+          done
+          for _ in $(seq 1 30); do
+            if [ -n "$(dig +short @ns1.contabo.net "${HOST}" A)" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::warning::The DNS record of ${HOST} does not exist yet. The address works a few minutes later."
+
+      - name: Comment on the pull request
+        if: always() && steps.pr.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ job.status }}
+          NUMBER: ${{ steps.pr.outputs.number }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          ACTION: ${{ steps.pr.outputs.action }}
+          HOST: ${{ steps.pr.outputs.host }}
+        run: |
+          if [ "$ACTION" = remove ]; then
+            body="The preview at https://${HOST} has been removed."
+          elif [ "$RESULT" = success ]; then
+            body="**Preview:** https://${HOST}
+
+          Commit \`${SHA::7}\`. The preview shows the posts of this pull request on the current site. It updates with every push, and disappears when the pull request closes. Search engines may not index it."
+          else
+            body="**Preview failed** for commit \`${SHA::7}\`. See ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} and the workflow preview in hayone1/codejourney."
+          fi
+          gh pr comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --edit-last --create-if-none --body "$body"
