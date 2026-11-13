@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-08-25
 category: Databases
 tags: [postgres, sql, performance]
-image: https://picsum.photos/seed/postgres-indexing-explained/1200/630
+image: /images/covers/postgres-indexing-explained.png
 featured: false
 minRead: 9
 author:

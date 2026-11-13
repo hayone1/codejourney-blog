@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-09-18
 category: Frontend
 tags: [tailwind, css]
-image: https://picsum.photos/seed/tailwind-v4-migration-notes/1200/630
+image: /images/covers/tailwind-v4-migration-notes.png
 featured: false
 minRead: 5
 author:

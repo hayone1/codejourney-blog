@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-08-02
 category: Career
 tags: [tools, productivity]
-image: https://picsum.photos/seed/my-developer-setup-2026/1200/630
+image: /images/covers/my-developer-setup-2026.png
 featured: false
 minRead: 4
 author:

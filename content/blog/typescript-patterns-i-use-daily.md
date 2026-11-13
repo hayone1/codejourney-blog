@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-10-14
 category: Languages
 tags: [typescript, patterns]
-image: https://picsum.photos/seed/typescript-patterns-i-use-daily/1200/630
+image: /images/covers/typescript-patterns-i-use-daily.png
 featured: false
 minRead: 6
 author:

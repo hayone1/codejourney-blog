@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-07-11
 category: DevOps
 tags: [git, ci]
-image: https://picsum.photos/seed/git-workflows-that-scale/1200/630
+image: /images/covers/git-workflows-that-scale.png
 featured: false
 minRead: 7
 author:

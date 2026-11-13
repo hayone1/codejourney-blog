@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-06-20
 category: AI
 tags: [ai, agents, llm]
-image: https://picsum.photos/seed/building-ai-agents-with-claude/1200/630
+image: /images/covers/building-ai-agents-with-claude.png
 featured: false
 minRead: 11
 author:
