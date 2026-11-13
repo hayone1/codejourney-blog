@@ -2,6 +2,8 @@
 
 This repository holds only the posts of the CodeJourney blog. The site lives in `hayone1/codejourney`, and its handoff note `.notes/handoff.md` describes how posts reach the site. Read that note before you change a workflow here.
 
+Draw diagrams with draw.io as `*.drawio.svg` files, never with Mermaid. Follow the skill `drawio-diagrams` in `.claude/skills/drawio-diagrams/SKILL.md`.
+
 Never commit `.env`: the repository is public, and `.env` holds `SITE_DISPATCH_TOKEN`.
 
 ## Expiring credentials
