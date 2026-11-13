@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-09-30
 category: Backend
 tags: [node, performance, debugging]
-image: https://picsum.photos/seed/debugging-node-memory-leaks/1200/630
+image: /images/covers/debugging-node-memory-leaks.png
 featured: false
 minRead: 10
 author:

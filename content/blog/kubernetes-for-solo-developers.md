@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-10-20
 category: DevOps
 tags: [kubernetes, docker, homelab]
-image: https://picsum.photos/seed/kubernetes-for-solo-developers/1200/630
+image: /images/covers/kubernetes-for-solo-developers.png
 featured: true
 minRead: 12
 author:

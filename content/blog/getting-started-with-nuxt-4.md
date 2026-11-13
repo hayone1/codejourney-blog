@@ -4,7 +4,7 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. A practica
 date: 2026-10-28
 category: Frameworks
 tags: [nuxt, vue, tutorial]
-image: https://picsum.photos/seed/getting-started-with-nuxt-4/1200/630
+image: /images/covers/getting-started-with-nuxt-4.png
 featured: true
 minRead: 8
 author:
