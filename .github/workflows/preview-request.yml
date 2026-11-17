@@ -34,4 +34,5 @@ jobs:
         env:
           NUMBER: ${{ github.event.pull_request.number }}
           ACTION: ${{ github.event.action }}
-        run: echo "The workflow Preview handles '${ACTION}' for pull request #${NUMBER}."
+        run: |
+          echo "The workflow Preview handles '${ACTION}' for pull request #${NUMBER}."
