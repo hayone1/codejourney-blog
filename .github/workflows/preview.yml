@@ -11,18 +11,22 @@ name: Preview
 # the pull request.
 #
 # Needs the secret SITE_DISPATCH_TOKEN of the environment "site-dispatch",
-# like rebuild-site.yml. Only main may use the environment.
-# "pull_request_target" runs this file from main, so the token is available,
-# and the workflow never checks out the code of the pull request. Pull
-# requests from forks get no preview: their posts would run on the cluster.
+# like rebuild-site.yml. Only main may use the environment. A "workflow_run"
+# workflow always runs from main, so the token is available. The workflow
+# never checks out the code of the pull request, and it reads the pull
+# request from the GitHub API instead of trusting the run that started it.
+# Pull requests from forks get no preview: their posts would run on the
+# cluster.
+#
+# This workflow does not use "pull_request_target". GitHub blocks that
+# trigger in public repositories by default from 2026-12-02.
 on:
-  pull_request_target:
-    branches: [main]
-    types: [opened, synchronize, reopened, closed]
-  # "Studio PR" opens its pull request with GITHUB_TOKEN, and GitHub starts
-  # no workflow for that event. This trigger covers that first preview.
   workflow_run:
-    workflows: ["Studio PR"]
+    # "Preview request" runs for every pull request event (opened,
+    # synchronize, reopened, closed), without secrets.
+    # "Studio PR" opens its pull request with GITHUB_TOKEN, and GitHub starts
+    # no workflow for that event. That trigger covers that first preview.
+    workflows: ["Preview request", "Studio PR"]
     types: [completed]
 
 permissions:
@@ -30,16 +34,14 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: preview-${{ github.event.pull_request.number || 'studio' }}
+  group: preview-${{ github.event.workflow_run.name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 jobs:
   preview:
     if: >-
-      (github.event_name == 'pull_request_target'
-        && github.event.pull_request.head.repo.full_name == github.repository)
-      || (github.event_name == 'workflow_run'
-        && github.event.workflow_run.conclusion == 'success')
+      github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-latest
     environment: site-dispatch
     timeout-minutes: 40
@@ -48,13 +50,10 @@ jobs:
         id: pr
         env:
           GH_TOKEN: ${{ github.token }}
-          EVENT: ${{ github.event_name }}
-          ACTION: ${{ github.event.action }}
-          NUMBER: ${{ github.event.pull_request.number }}
-          BRANCH: ${{ github.event.pull_request.head.ref }}
-          SHA: ${{ github.event.pull_request.head.sha }}
+          TRIGGER: ${{ github.event.workflow_run.name }}
+          TITLE: ${{ github.event.workflow_run.display_title }}
         run: |
-          if [ "$EVENT" = workflow_run ]; then
+          if [ "$TRIGGER" = "Studio PR" ]; then
             pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head studio --base main --state open \
               --json number,headRefOid,createdAt --jq '.[0] // empty')
             if [ -z "$pr" ]; then
@@ -62,7 +61,7 @@ jobs:
               exit 0
             fi
             # Only a pull request that "Studio PR" just opened. Later pushes
-            # to studio start this workflow through pull_request_target.
+            # to studio start this workflow through "Preview request".
             age=$(( $(date +%s) - $(date -d "$(jq -r .createdAt <<< "$pr")" +%s) ))
             if [ "$age" -gt 600 ]; then
               echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -72,6 +71,25 @@ jobs:
             SHA=$(jq -r .headRefOid <<< "$pr")
             BRANCH=studio
             ACTION=opened
+          else
+            # The run name is "Preview request for #<number>". Take only the
+            # number, and read everything else from the API.
+            if [[ ! "$TITLE" =~ ^Preview\ request\ for\ \#([0-9]+)$ ]]; then
+              echo "::error::Unexpected run name of Preview request: '${TITLE}'."
+              exit 1
+            fi
+            NUMBER="${BASH_REMATCH[1]}"
+            pr=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${NUMBER}")
+            if [ "$(jq -r .head.repo.full_name <<< "$pr")" != "$GITHUB_REPOSITORY" ] \
+              || [ "$(jq -r .base.ref <<< "$pr")" != main ]; then
+              echo "Pull request #${NUMBER} comes from a fork or does not target main: no preview."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            SHA=$(jq -r .head.sha <<< "$pr")
+            BRANCH=$(jq -r .head.ref <<< "$pr")
+            ACTION=opened
+            if [ "$(jq -r .state <<< "$pr")" = closed ]; then ACTION=closed; fi
           fi
           action=deploy
           if [ "$ACTION" = closed ]; then action=remove; fi
