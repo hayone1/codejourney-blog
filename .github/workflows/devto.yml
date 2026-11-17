@@ -1,0 +1,48 @@
+name: Publish to dev.to
+
+# Publishes the posts in dev.to/ to https://dev.to/hayone1 after they reach
+# main. The action creates each article on the first run and updates it on
+# later runs. After the first run it writes the article "id" into the
+# frontmatter of the file and commits that to main, so the next run updates
+# the same article instead of creating a new one.
+#
+# A file with "published: false" becomes a draft on dev.to. Change it to
+# "published: true" to make the article public.
+#
+# Images: use https://raw.githubusercontent.com/hayone1/codejourney-blog/main/public/images/...
+# because codejourney.io may answer dev.to with "coming soon".
+#
+# Needs the secret DEVTO_API_KEY of the environment "devto". Only main may use
+# the environment.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dev.to/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: devto
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: devto
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Publish the articles in dev.to/
+        uses: sinedied/publish-devto@v2
+        env:
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        with:
+          devto_key: ${{ secrets.DEVTO_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: "dev.to/**/*.md"
+          branch: main

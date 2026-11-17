@@ -5,6 +5,6 @@ node_modules
 .env
 .env.*
 
-# Cross-post copies (dev.to, LinkedIn); not part of the site
-dev.to/
+# LinkedIn copies of posts; posted by hand, not part of the site
 linkedin/
+ideas/
