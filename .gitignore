@@ -4,3 +4,7 @@ node_modules
 # Local secrets, for example SITE_DISPATCH_TOKEN
 .env
 .env.*
+
+# Cross-post copies (dev.to, LinkedIn); not part of the site
+dev.to/
+linkedin/
