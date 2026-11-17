@@ -1,0 +1,38 @@
+name: Preview request
+
+# The unprivileged half of the preview of a pull request. This workflow runs
+# for every pull request into main, with no secrets and no write access, and
+# does nothing except finish. Its finish starts the workflow "Preview"
+# (trigger "workflow_run"), which runs from main with the secret
+# SITE_DISPATCH_TOKEN, and builds or removes the preview.
+#
+# This split replaces the trigger "pull_request_target". GitHub blocks that
+# trigger in public repositories by default from 2026-12-02, and it is easy
+# to misuse. "Preview" reads the pull request from the GitHub API, so it does
+# not trust anything that this workflow could change.
+#
+# The run name carries the pull request number. Do not rename this workflow
+# without changing the list "workflows" in preview.yml.
+run-name: "Preview request for #${{ github.event.pull_request.number }}"
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, closed]
+
+permissions: {}
+
+jobs:
+  request:
+    # Pull requests from forks get no preview: their posts would run on the
+    # cluster. A skipped job does not start "Preview".
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Request a preview
+        env:
+          NUMBER: ${{ github.event.pull_request.number }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          echo "The workflow Preview handles '${ACTION}' for pull request #${NUMBER}."
