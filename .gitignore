@@ -4,3 +4,7 @@ node_modules
 # Local secrets, for example SITE_DISPATCH_TOKEN
 .env
 .env.*
+
+# LinkedIn copies of posts; posted by hand, not part of the site
+linkedin/
+ideas/
