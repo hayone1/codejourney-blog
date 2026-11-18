@@ -1,6 +1,6 @@
 ---
 title: 'Affordable Kubernetes: The best options'
-published: false
+published: true
 description: Highlighting some of the cheapest reliable options for deploying and running Kubernetes.
 tags: 'kubernetes, devops, terraform, linux'
 cover_image: 'https://raw.githubusercontent.com/hayone1/codejourney-blog/main/public/images/covers/affordable-kubernetes-the-best-options.png'
