@@ -2,9 +2,10 @@
 title: 'Affordable Kubernetes: The best options'
 published: false
 description: Highlighting some of the cheapest reliable options for deploying and running Kubernetes.
-tags: kubernetes, devops, terraform, linux
-cover_image: https://raw.githubusercontent.com/hayone1/codejourney-blog/main/public/images/covers/affordable-kubernetes-the-best-options.png
-canonical_url: https://codejourney.io/blog/affordable-kubernetes-the-best-options
+tags: 'kubernetes, devops, terraform, linux'
+cover_image: 'https://raw.githubusercontent.com/hayone1/codejourney-blog/main/public/images/covers/affordable-kubernetes-the-best-options.png'
+canonical_url: 'https://codejourney.io/blog/affordable-kubernetes-the-best-options'
+id: 5061006
 ---
 
 Kubernetes brought democracy to the cloud somewhat. Anyone in the community can suggest a feature by writing a [Kubernetes Enhancement Proposal (KEP)](https://www.kubernetes.dev/resources/keps/). You can deploy a cluster on several clouds and choose how agnostic or locked-in you become.
