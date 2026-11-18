@@ -75,7 +75,7 @@ That method wasn't really neat, so what I'd rather advise is to use [fast revers
 
 ## Hetzner
 
-Hetzner is the most mature and production-ready option, thanks to community contributions. One regular performance server with 8 vCPU and 16GB RAM - [CPX42](https://www.hetzner.com/cloud/regular-performance/) will cost ~$75.
+Hetzner is the most mature and production-ready option, thanks to community contributions. One regular performance server with 8 vCPU and 16GB RAM - [CPX42](https://www.hetzner.com/cloud/regular-performance/) will cost ~$80.
 
 ### My Hetzner Setup
 

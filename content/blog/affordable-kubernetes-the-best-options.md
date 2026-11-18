@@ -23,7 +23,7 @@ That's great, but it's still the cloud, and the cloud is still expensive. This m
 |                  | [OrangePi 5 Pro](https://www.aliexpress.com/item/1005006801741948.html) | [Hetzner](https://www.hetzner.com/cloud/regular-performance/) | [Contabo](https://contabo.com/en/vps-performance/) |
 |------------------|----------------|---------|---------|
 | Setup Difficulty | ⬤ ⬤ ⬤ ⬤ | ⬤ ⬤ | ⬤ ⬤ ⬤ |
-| Cost (test env)  | $350 for 16GB RAM, 8 CPU<br>(one time purchase) | $75 for 16GB RAM, 8 CPU<br>(postpaid monthly) | $45 for 24GB RAM, 8 CPU<br>(prepaid monthly) |
+| Cost (test env)  | $350 for 16GB RAM, 8 CPU<br>(one time purchase) | $80 for 16GB RAM, 8 CPU<br>(postpaid monthly) | $45 for 24GB RAM, 8 CPU<br>(prepaid monthly) |
 | Best for         | labs, test env | labs, test-prod env | labs, test-prod env |
 
 </details>
@@ -85,7 +85,7 @@ That method wasn't really neat, so what I'd rather advise is to use [fast revers
 
 ## Hetzner
 
-Hetzner is the most mature and production-ready option, thanks to community contributions. One regular performance server with 8 vCPU and 16GB RAM - [CPX42](https://www.hetzner.com/cloud/regular-performance/) will cost ~$75.
+Hetzner is the most mature and production-ready option, thanks to community contributions. One regular performance server with 8 vCPU and 16GB RAM - [CPX42](https://www.hetzner.com/cloud/regular-performance/) will cost ~$80.
 
 ### My Hetzner Setup
 
