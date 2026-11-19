@@ -1,7 +1,7 @@
 ---
 title: 'Affordable Kubernetes: The best options'
 description: Highlighting some of the cheapest reliable options for deploying and running Kubernetes.
-date: 2026-11-17
+date: 2026-11-19
 category: DevOps
 tags: [kubernetes, terraform, linux]
 image: /images/covers/affordable-kubernetes-the-best-options.png
